@@ -5,7 +5,9 @@ import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
   templateUrl: './webrtc.component.html',
   styleUrls: ['./webrtc.component.css']
 })
-export class WebrtcComponent implements OnInit {
+export class WebrtcComponent
+  implements OnInit
+{
 
   constructor() { }
 
@@ -40,7 +42,8 @@ export class WebrtcComponent implements OnInit {
     video: true
   };
 
-  gotStream(stream) {
+  gotStream(stream)
+  {
     this.trace('Received local stream');
     this.localVideo.nativeElement.srcObject = stream;
     this.callButtonDisabled = false;
@@ -127,7 +130,8 @@ export class WebrtcComponent implements OnInit {
 
     this.peerConnection.addEventListener('icecandidate', event =>
     {
-      if (event.candidate) {
+      if (event.candidate)
+      {
         this.send({
             event : "candidate",
             data : event.candidate
@@ -143,7 +147,8 @@ export class WebrtcComponent implements OnInit {
     this.gotStream(stream);
   }
   
-  async call() {
+  async call()
+  {
     this.callButtonDisabled = true;
     this.hangupButtonDisabled = false;
     this.trace('Starting call');
@@ -158,21 +163,24 @@ export class WebrtcComponent implements OnInit {
     });
   }
 
-  gotRemoteStream(e) {
+  gotRemoteStream(e)
+  {
     if (this.remoteVideo.nativeElement.srcObject !== e.streams[0]) {
       this.remoteVideo.nativeElement.srcObject = e.streams[0];
       this.trace('Received remote stream');
     }
   }
 
-  hangup() {
+  hangup()
+  {
     this.trace('Ending call');
     this.peerConnection.close();
     this.hangupButtonDisabled = true;
     this.callButtonDisabled = false;
   }
 
-  trace(arg) {
+  trace(arg)
+  {
     var now = (window.performance.now() / 1000).toFixed(3);
     console.log(now + ': ', arg);
   }
