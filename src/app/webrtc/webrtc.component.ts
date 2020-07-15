@@ -11,7 +11,10 @@ export class WebrtcComponent
 
   constructor() { }
 
-  ngOnInit(): void {
+  ngOnInit(): void {}
+
+  ngAfterViewInit()
+  {
     this.conn = new WebSocket('ws://localhost:8080/socket');
     this.conn.addEventListener('open', e => this.trace(e));
     this.conn.addEventListener('message', msg => this.onMsg(msg));
@@ -138,7 +141,13 @@ export class WebrtcComponent
         });
       }
     });
-    this.peerConnection.addEventListener('track', this.gotRemoteStream);
+    this.peerConnection.ontrack = e =>
+    {
+      if (this.remoteVideo.nativeElement.srcObject !== e.streams[0]) {
+        this.remoteVideo.nativeElement.srcObject = e.streams[0];
+        this.trace('Received remote stream');
+      }
+    };
     stream.getTracks().forEach(track =>
     {
       this.peerConnection.addTrack(track, stream);
@@ -161,14 +170,6 @@ export class WebrtcComponent
       event : "offer",
       data : offer
     });
-  }
-
-  gotRemoteStream(e)
-  {
-    if (this.remoteVideo.nativeElement.srcObject !== e.streams[0]) {
-      this.remoteVideo.nativeElement.srcObject = e.streams[0];
-      this.trace('Received remote stream');
-    }
   }
 
   hangup()
