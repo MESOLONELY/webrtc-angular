@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { WebrtcComponent } from './webrtc/webrtc.component'
+import { WebrtcComponent } from './components/webrtc/webrtc.component'
 
 const routes : Routes = [
     { path : 'connect', component : WebrtcComponent }
