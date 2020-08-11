@@ -3,7 +3,7 @@
       <video id="localVideo" #localVideo playsinline autoplay></video>
 </div>
 <div>
-      <button #startButton [disabled]="startButtonDisabled" (click)="openCamera(undefined)">Open Camera</button>
+      <button #startButton [disabled]="startButtonDisabled" (click)="openStream(undefined)">Open Camera</button>
       <button #callButton [disabled]="callButtonDisabled" (click)="call()">Call</button>
       <button #hangupButton [disabled]="hangupButtonDisabled" (click)="hangup()">Hang Up</button>
 </div>

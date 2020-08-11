@@ -13,7 +13,7 @@ export class WsService
 
     public init() : void
     {
-        this.ws = new WebSocket('ws://localhost:8080/socket');
+        this.ws = new WebSocket('ws://localhost:64072/socket');
         this.ws.addEventListener('open', e => this.trace(e));
         this.ws.addEventListener('message', 
             msg => this.onMsg.next(JSON.parse(msg.data) as Signal)

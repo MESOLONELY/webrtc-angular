@@ -57,7 +57,7 @@ export class WebrtcComponent
   {
     this.trace('Received local stream');
     this.localVideo.nativeElement.srcObject = stream;
-    this.callButtonDisabled = false;
+    this.localStream = stream;
   }
   
   errorMsg(msg: string, error: any)
@@ -82,7 +82,7 @@ export class WebrtcComponent
     this.pcService.init();
     if(!this.localStream)
     {
-      this.openCamera({ audio: true })
+      this.openStream({ audio: true })
         .then(stream => this.pcService.addTrack(stream));
     }
     else
@@ -96,13 +96,18 @@ export class WebrtcComponent
     switch (signal.event)
     {
       case "create":
-        this.initPc();
-        this.pcService.createOffer()
-          .then(offer => this.wsService.send('offer', offer));
+        if(confirm("Incoming call"))
+        {
+          this.initPc();
+          this.pcService.createOffer()
+            .then(offer => this.wsService.send('offer', offer));
+        }
         break;
       case "offer":
         this.pcService.handleOffer(signal.data)
           .then(answer => this.wsService.send('answer', answer));
+          this.callButtonDisabled = true;
+          this.hangupButtonDisabled = false;
         break;
       case "answer":
         this.pcService.handleAnswer(signal.data);
@@ -119,8 +124,26 @@ export class WebrtcComponent
     }
   }
 
-  async openCamera(constraints: MediaStreamConstraints)
+  upgrade() : void
   {
+    this.startButtonDisabled = true;
+    navigator.mediaDevices
+      .getUserMedia({video: true})
+      .then(stream => {
+        this.gotStream(stream);
+        this.pcService.addTrack(stream);
+        this.pcService.createOffer()
+          .then(offer => this.wsService.send('offer', offer));
+      })
+  }
+
+  async openStream(constraints: MediaStreamConstraints)
+  {
+    if (this.callButtonDisabled)
+    {
+      this.upgrade();
+      return;
+    }
     let stream: MediaStream;
     if(constraints)
     {
@@ -131,18 +154,17 @@ export class WebrtcComponent
       this.startButtonDisabled = true;
       stream = await navigator.mediaDevices.getUserMedia(this.constraints);
     }
-    this.localStream = stream;
     this.trace('Added local stream to pc');
     this.gotStream(stream);
     return stream;
   }
   
-  async call()
+  call()
   {
     this.initPc();
+    this.wsService.send('create', null);
     this.callButtonDisabled = true;
     this.hangupButtonDisabled = false;
-    this.wsService.send('create', null)
   }
 
   gotRemoteStream(e: RTCTrackEvent)
