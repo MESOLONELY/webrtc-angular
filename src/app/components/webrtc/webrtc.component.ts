@@ -101,6 +101,8 @@ export class WebrtcComponent
           this.initPc();
           this.pcService.createOffer()
             .then(offer => this.wsService.send('offer', offer));
+            this.callButtonDisabled = true;
+            this.hangupButtonDisabled = false;
         }
         break;
       case "offer":
