@@ -57,12 +57,12 @@ export class WebrtcComponent
   {
     this.trace('Received local stream');
     this.localVideo.nativeElement.srcObject = stream;
-    this.localStream = stream;
   }
   
   errorMsg(msg: string, error: any)
   {
     const errorElement = document.querySelector('#errorMsg');
+    errorElement.innerHTML = '';
     errorElement.innerHTML += `<p>${msg}</p>`;
     if (typeof error !== 'undefined')
     {
@@ -74,7 +74,9 @@ export class WebrtcComponent
   {
     console.log('Remote Hanging Up');
     this.errorMsg("Remote hung up the call", undefined);
+    this.pcService.close();
     this.hangupButtonDisabled= true;
+    this.callButtonDisabled = false;
   }
 
   initPc()
@@ -82,8 +84,10 @@ export class WebrtcComponent
     this.pcService.init();
     if(!this.localStream)
     {
-      this.openStream({ audio: true })
-        .then(stream => this.pcService.addTrack(stream));
+      this.openStream({ 
+        audio: true,
+        video: false 
+      }).then(stream => this.pcService.addTrack(stream));
     }
     else
     {
@@ -106,13 +110,15 @@ export class WebrtcComponent
         }
         break;
       case "offer":
+        this.errorMsg("Remote ansewered", undefined);
         this.pcService.handleOffer(signal.data)
           .then(answer => this.wsService.send('answer', answer));
-          this.callButtonDisabled = true;
-          this.hangupButtonDisabled = false;
+        this.callButtonDisabled = true;
+        this.hangupButtonDisabled = false;
         break;
       case "answer":
         this.pcService.handleAnswer(signal.data);
+        this.errorMsg("Established.", undefined);
         break;
       // when a remote peer sends an ice candidate to us
       case "candidate":
@@ -130,13 +136,17 @@ export class WebrtcComponent
   {
     this.startButtonDisabled = true;
     navigator.mediaDevices
-      .getUserMedia({video: true})
-      .then(stream => {
-        this.gotStream(stream);
+      .getUserMedia({ 
+        audio: true,
+        video: true 
+      }).then(stream => {
+        this.localStream = stream;
+        const audioTracks = stream.getAudioTracks();
+        this.localStream.removeTrack(audioTracks[0]);
+        this.gotStream(this.localStream);
         this.pcService.addTrack(stream);
-        this.pcService.createOffer()
-          .then(offer => this.wsService.send('offer', offer));
-      })
+        return this.pcService.createOffer()
+      }).then(offer => this.wsService.send('offer', offer));
   }
 
   async openStream(constraints: MediaStreamConstraints)
@@ -155,9 +165,12 @@ export class WebrtcComponent
     {
       this.startButtonDisabled = true;
       stream = await navigator.mediaDevices.getUserMedia(this.constraints);
+      this.localStream = stream;
+      const audioTracks = stream.getAudioTracks();
+      this.localStream.removeTrack(audioTracks[0]);
+      this.gotStream(this.localStream);
     }
     this.trace('Added local stream to pc');
-    this.gotStream(stream);
     return stream;
   }
   
@@ -165,8 +178,8 @@ export class WebrtcComponent
   {
     this.initPc();
     this.wsService.send('create', null);
-    this.callButtonDisabled = true;
-    this.hangupButtonDisabled = false;
+    // this.callButtonDisabled = true;
+    // this.hangupButtonDisabled = false;
   }
 
   gotRemoteStream(e: RTCTrackEvent)
@@ -180,7 +193,7 @@ export class WebrtcComponent
   hangup()
   {
     this.trace('Ending call');
-    this.pcService.close()
+    this.pcService.close();
     this.hangupButtonDisabled = true;
     this.callButtonDisabled = false;
   }
