@@ -16,7 +16,7 @@ export class PcService
         "iceServers" : [{
             "urls" : 
             [
-                "stun:stun.l.google.com:19302",
+                "stun:stun.l.google.com:19302"/*,
                 "stun:stun1.l.google.com:19302",
                 "stun:stun2.l.google.com:19302",
                 "stun:stun3.l.google.com:19302",
@@ -29,7 +29,7 @@ export class PcService
                 "stun:stun.voiparound.com",
                 "stun:stun.voipbuster.com",
                 "stun:stun.voipstunt.com",
-                "stun:stun.voxgratia.org"
+                "stun:stun.voxgratia.org"*/
             ]
         }]
     };

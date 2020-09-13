@@ -14,7 +14,8 @@ export class WsService
     public init() : void
     {
         const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-        this.ws = new WebSocket(protocol + '://localhost:5000/socket');
+        this.ws = new WebSocket(protocol + '://afkey.aiursoft.com:5000/socket');
+        // this.ws = new WebSocket('ws://localhost:8080/socket');
         this.ws.addEventListener('open', e => this.trace(e));
         this.ws.addEventListener('message', 
             msg => this.onMsg.next(JSON.parse(msg.data) as Signal)
