@@ -36,6 +36,7 @@ export class WebrtcComponent
   @ViewChild('remoteVideo') remoteVideo: ElementRef;
 
   startButtonDisabled = false;
+  shareButtonDisabled = false;
   callButtonDisabled = false;
   hangupButtonDisabled = true;
   private localStream: MediaStream;
@@ -50,6 +51,7 @@ export class WebrtcComponent
     if (event.candidate)
     {
       this.wsService.send('candidate', event.candidate);
+      this.trace(''+ event.candidate.type);
     }
   }
 
@@ -107,6 +109,7 @@ export class WebrtcComponent
             .then(offer => this.wsService.send('offer', offer));
             this.callButtonDisabled = true;
             this.hangupButtonDisabled = false;
+            this.shareButtonDisabled = false;
         }
         break;
       case "offer":
@@ -115,6 +118,7 @@ export class WebrtcComponent
           .then(answer => this.wsService.send('answer', answer));
         this.callButtonDisabled = true;
         this.hangupButtonDisabled = false;
+        this.shareButtonDisabled = false;
         break;
       case "answer":
         this.pcService.handleAnswer(signal.data);
@@ -135,6 +139,7 @@ export class WebrtcComponent
   upgrade() : void
   {
     this.startButtonDisabled = true;
+    this.shareButtonDisabled = false;
     navigator.mediaDevices
       .getUserMedia({ 
         audio: true,
@@ -173,13 +178,29 @@ export class WebrtcComponent
     this.trace('Added local stream to pc');
     return stream;
   }
+
+  shareScreen()
+  {
+    this.startButtonDisabled = false;
+    this.shareButtonDisabled = true;
+    const mediaDevices = navigator.mediaDevices as any;
+    mediaDevices.getDisplayMedia({video: true})
+      .then(stream => {
+        this.localStream = stream;
+        this.gotStream(this.localStream);
+        this.openStream({ 
+          audio: true,
+          video: false 
+        }).then(audioStream => stream.addTrack(audioStream.getAudioTracks()));
+        this.pcService.addTrack(stream);
+        return this.pcService.createOffer();
+      }).then(offer => this.wsService.send('offer', offer));
+  }
   
   call()
   {
     this.initPc();
     this.wsService.send('create', null);
-    // this.callButtonDisabled = true;
-    // this.hangupButtonDisabled = false;
   }
 
   gotRemoteStream(e: RTCTrackEvent)

@@ -13,25 +13,11 @@ export class PcService
 
     configuration =
     {
-        "iceServers" : [{
-            "urls" : 
-            [
-                "stun:stun.l.google.com:19302"/*,
-                "stun:stun1.l.google.com:19302",
-                "stun:stun2.l.google.com:19302",
-                "stun:stun3.l.google.com:19302",
-                "stun:stun4.l.google.com:19302",
-                "stun:stun.ekiga.net",
-                "stun:stun.ideasip.com",
-                "stun:stun.rixtelecom.se",
-                "stun:stun.schlund.de",
-                "stun:stun.stunprotocol.org:3478",
-                "stun:stun.voiparound.com",
-                "stun:stun.voipbuster.com",
-                "stun:stun.voipstunt.com",
-                "stun:stun.voxgratia.org"*/
-            ]
-        }]
+        iceServers:[
+            {
+                urls:'stun.l.google.com:19302'
+            }
+        ]
     };
 
     public async handleOffer(offer)
@@ -54,6 +40,7 @@ export class PcService
 
     public init() : void
     {
+        console.log(`Creating new PeerConnection with config=${JSON.stringify(this.configuration)}`);
         this.pc = new RTCPeerConnection(this.configuration);
         this.pc.addEventListener('icecandidate',
             e => this.onIceCandidate.next(e)
